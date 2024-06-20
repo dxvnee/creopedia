@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -127,6 +129,22 @@ val warnaHitam = Color(0xFF000000)
 val warnaAbu = Color(0xFF5C5C5C)
 val warnaMerah = Color(0xFFDF0000)
 
+val MAX_IMAGE_SIZE = 2 * 1024 * 1024
+
+fun resizeBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
+    var width = bitmap.width
+    var height = bitmap.height
+    val bitmapRatio = width.toFloat() / height.toFloat()
+
+    if (bitmap.byteCount > maxSize) {
+        val scaleFactor = Math.sqrt((bitmap.byteCount / maxSize).toDouble()).toFloat()
+
+        width = (width / scaleFactor).toInt()
+        height = (height / scaleFactor).toInt()
+    }
+
+    return Bitmap.createScaledBitmap(bitmap, width, height, true)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,15 +169,20 @@ fun MainScreen() {
 
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
-        if (bitmap != null) showCreoDialog = true
+        if (bitmap != null){
+            bitmap = resizeBitmap(bitmap!!, MAX_IMAGE_SIZE)
+            showCreoDialog = true
+        }
     }
     val launcherEdit = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
         if (bitmap != null){
+            bitmap = resizeBitmap(bitmap!!, MAX_IMAGE_SIZE)
             showCreoEditDialog = true
-            Log.d("JADIDI", "JADIID")
+
         }
     }
+
 
     Scaffold (
         topBar = {
@@ -213,6 +236,7 @@ fun MainScreen() {
             }
         }
     ) { padding ->
+
         ScreenContent(user, viewModel, user.email, Modifier.padding(padding)){ creoData ->
             showCreoConfirmDialog = true
             selectedCreo = creoData
@@ -261,6 +285,7 @@ fun MainScreen() {
                     showCreoEditDialog = false
                 },
                 onConfirmation = { creo ->
+
                     viewModel.updateCreo(user.email, selectedCreo!!.id.toInt() ,creo, bitmap!!)
                     showCreoEditDialog = false
                 },
@@ -284,6 +309,8 @@ fun MainScreen() {
                     showCreoDialog = false
                 },
                 onConfirmation = { creo ->
+                    val ukuran = bitmap!!.byteCount.toLong()
+                    Log.d("ukuran", ukuran.toString())
                     viewModel.createCreoWithImage(user.email, creo, bitmap!!)
                     showCreoDialog = false
                 }, false
@@ -334,7 +361,7 @@ fun ScreenContent(
         ApiStatus.SUCCESS -> {
 
             LazyVerticalGrid (
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize().padding(top = 7.dp),
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ){
@@ -426,7 +453,9 @@ fun ListItem(
                         .fillMaxWidth()
                 ){
                     Row(
-                        modifier = Modifier.padding(14.dp)
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ){
 
                         Column (
@@ -442,7 +471,8 @@ fun ListItem(
                             )
                         }
                         Column(
-                            modifier = Modifier.background(shape = RoundedCornerShape(12.dp), color = warnaOrange)
+                            modifier = Modifier
+                                .background(shape = RoundedCornerShape(12.dp), color = warnaOrange)
                                 .fillMaxWidth()
                                 .padding(10.dp)
 
@@ -450,18 +480,18 @@ fun ListItem(
                         {
                             Text(
                                 text = creo.name,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = creo.name,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.ExtraBold,
                                 color = Color.White,
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = creo.element,
+                                fontWeight = FontWeight.Normal,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = creo.size,
                                 fontWeight = FontWeight.Normal,
                                 fontStyle = FontStyle.Italic,
                                 fontSize = 14.sp,

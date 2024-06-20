@@ -20,7 +20,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
-private const val BASE_URL = "https://a6e7-2404-8000-1024-18ef-a4bb-3c5b-711f-5ad6.ngrok-free.app"
+private const val BASE_URL = "https://creopedia-a3bb75061510.herokuapp.com"
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
