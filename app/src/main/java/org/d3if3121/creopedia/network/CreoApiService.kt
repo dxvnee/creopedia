@@ -61,7 +61,7 @@ interface CreoApiService {
         @Header("Authorization") userId: String,
         @Path("id") id: Int,
         @Part("name") name: RequestBody,
-        @Part("element") element:  RequestBody,
+        @Part("element") element: RequestBody,
         @Part("size") size: RequestBody,
         @Part image: MultipartBody.Part
     ): OpStatus
